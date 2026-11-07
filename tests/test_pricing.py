@@ -36,3 +36,36 @@ def test_negative_price_is_rejected():
 
     with pytest.raises(ValueError):
         calculate_total(items)
+
+
+@pytest.mark.parametrize(
+    "price, quantity, expected",
+    [
+        (10, 2, 20),
+        (5, 3, 15),
+        (0, 10, 0),
+        (2.5, 4, 10),
+    ],
+)
+def test_item_subtotal(price, quantity, expected):
+
+    cart = [CartItem(price=price, quantity=quantity)]
+
+    assert price * quantity == expected
+    assert calculate_total(cart) == expected
+
+
+@pytest.mark.parametrize(
+    "items, expected",
+    [
+        ([(10, 2), (5, 3)], 35),
+        ([(0, 10), (2.5, 4)], 10),
+        ([(100, 1), (50, 2)], 200),
+        ([(1.5, 4), (1, 5), (2, 2)], 15),
+        ([(0, 0), (0, 0)], 0),
+    ],
+)
+def test_valid_carts(items, expected):
+    card = [CartItem(price=price, quantity=quantity) for price, quantity in items]
+
+    assert calculate_total(card) == expected
