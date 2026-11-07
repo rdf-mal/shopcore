@@ -11,3 +11,11 @@ def test_calculate_total():
     result = calculate_total(items)
 
     assert result == 35
+
+
+def test_empty_card():
+    items = []
+
+    result = calculate_total(items)
+
+    assert result == 0
