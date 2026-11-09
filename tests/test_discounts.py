@@ -3,24 +3,32 @@ import pytest
 from shopcore.discounts import apply_discount
 
 
-def rest_apply_discount():
-    result = apply_discount(100, "SAVE10")
+@pytest.mark.parametrize(
+    "total, expected",
+    [
+        (100, 90),
+        (35, 31.50),
+        (41.99, 37.791),
+        (0, 0),
+    ],
+)
+def test_apply_discount(total, expected):
+    result = apply_discount(total, "SAVE10")
+    assert result == pytest.approx(expected), "Discount not applied correctly"
+
+
+@pytest.mark.parametrize(
+    "code",
+    [
+        "SAVE10",
+        "save10",
+        "SaVe10",
+        "saVE10",
+    ],
+)
+def test_apply_discount_case_insensitive(code):
+    result = apply_discount(100, code)
     assert result == 90, "Discount code should be case-insensitive"
-
-
-def test_apply_discount_lowercase_code():
-    result = apply_discount(100, "save10")
-    assert result == 90, "Discount code should be case-insensitive"
-
-
-def test_apply_discount_mixedcase_code():
-    result = apply_discount(100, "SaVe10")
-    assert result == 90, "Discount code should be case-insensitive"
-
-
-def test_apply_discount_zero_total():
-    result = apply_discount(0, "SAVE10")
-    assert result == 0, "Discount on zero total should remain zero"
 
 
 def test_apply_discount_invalid_code():
