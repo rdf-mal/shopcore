@@ -7,8 +7,8 @@ from shopcore.pricing import calculate_total
 def test_calculate_total():
 
     items = [
-        CartItem(price=10, quantity=2),
-        CartItem(price=5, quantity=3),
+        CartItem(sku="item-1", price=10, quantity=2),
+        CartItem(sku="item-2", price=5, quantity=3),
     ]
 
     result = calculate_total(items)
@@ -25,14 +25,14 @@ def test_empty_card():
 
 
 def test_negative_quantity_is_rejected():
-    items = [CartItem(price=10, quantity=-2)]
+    items = [CartItem(sku="item-1", price=10, quantity=-2)]
 
     with pytest.raises(ValueError):
         calculate_total(items)
 
 
 def test_negative_price_is_rejected():
-    items = [CartItem(price=-10, quantity=2)]
+    items = [CartItem(sku="item-1", price=-10, quantity=2)]
 
     with pytest.raises(ValueError):
         calculate_total(items)
@@ -49,7 +49,7 @@ def test_negative_price_is_rejected():
 )
 def test_item_subtotal(price, quantity, expected):
 
-    cart = [CartItem(price=price, quantity=quantity)]
+    cart = [CartItem(sku="item-1", price=price, quantity=quantity)]
 
     assert price * quantity == expected
     assert calculate_total(cart) == expected
@@ -66,6 +66,9 @@ def test_item_subtotal(price, quantity, expected):
     ],
 )
 def test_valid_carts(items, expected):
-    card = [CartItem(price=price, quantity=quantity) for price, quantity in items]
+    card = [
+        CartItem(sku=f"item-{index}", price=price, quantity=quantity)
+        for index, (price, quantity) in enumerate(items)
+    ]
 
     assert calculate_total(card) == expected
