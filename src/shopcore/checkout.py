@@ -12,4 +12,19 @@ def calculate_checkout_total(items, code):
 def place_order(
     order: list[CartItem], inventory: dict[str, int], code: str = ""
 ) -> float:
-    raise NotImplementedError("This function is not yet implemented.")
+    required_stock = {}
+    for item in order:
+        if item.quantity <= 0:
+            raise ValueError("Order quantities must be positive")
+        required_stock[item.sku] = required_stock.get(item.sku, 0) + item.quantity
+
+    for sku, quantity in required_stock.items():
+        if inventory.get(sku, 0) < quantity:
+            raise ValueError(f"Insufficient stock for {sku}")
+
+    total = calculate_checkout_total(order, code)
+
+    for sku, quantity in required_stock.items():
+        inventory[sku] -= quantity
+
+    return total
