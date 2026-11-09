@@ -1,6 +1,6 @@
 import pytest
 
-from shopcore.checkout import calculate_checkout_total
+from shopcore.checkout import calculate_checkout_total, place_order
 from shopcore.models import CartItem
 
 
@@ -53,3 +53,60 @@ def test_checkout_with_empty_cart():
 def test_checkout_rejects_invalid_items(item):
     with pytest.raises(ValueError):
         calculate_checkout_total([item], "SAVE10")
+
+
+def test_place_order_accepts_available_items_and_calculates_checkout_total():
+    order = [CartItem(sku="shirt", price=60, quantity=1)]
+    inventory = {"shirt": 2}
+
+    result = place_order(order, inventory, "SAVE10")
+
+    assert result == pytest.approx(54)
+    assert inventory == {"shirt": 1}
+
+
+def test_place_order_rejects_quantity_above_stock_without_changing_inventory():
+    order = [CartItem(sku="shirt", price=20, quantity=3)]
+    inventory = {"shirt": 2}
+
+    with pytest.raises(ValueError):
+        place_order(order, inventory)
+
+    assert inventory == {"shirt": 2}
+
+
+@pytest.mark.parametrize("quantity", [0, -1])
+def test_place_order_rejects_non_positive_quantity_without_changing_inventory(quantity):
+    order = [CartItem(sku="shirt", price=20, quantity=quantity)]
+    inventory = {"shirt": 2}
+
+    with pytest.raises(ValueError):
+        place_order(order, inventory)
+
+    assert inventory == {"shirt": 2}
+
+
+def test_place_order_rejects_entire_order_if_one_item_is_unavailable():
+    order = [
+        CartItem(sku="shirt", price=20, quantity=1),
+        CartItem(sku="hat", price=10, quantity=2),
+    ]
+    inventory = {"shirt": 3, "hat": 1}
+
+    with pytest.raises(ValueError):
+        place_order(order, inventory)
+
+    assert inventory == {"shirt": 3, "hat": 1}
+
+
+def test_place_order_counts_repeated_skus_together():
+    order = [
+        CartItem(sku="shirt", price=20, quantity=1),
+        CartItem(sku="shirt", price=20, quantity=1),
+    ]
+    inventory = {"shirt": 1}
+
+    with pytest.raises(ValueError):
+        place_order(order, inventory)
+
+    assert inventory == {"shirt": 1}
