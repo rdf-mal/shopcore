@@ -31,8 +31,18 @@ def test_apply_discount_case_insensitive(code):
     assert result == 90, "Discount code should be case-insensitive"
 
 
-def test_apply_discount_invalid_code():
-    result = apply_discount(100, "INVALID10")
+@pytest.mark.parametrize(
+    "code",
+    [
+        "INVALID10",
+        "code10",
+        "SAVE20",
+        "Coupon",
+        "EXTRA5",
+    ],
+)
+def test_apply_discount_invalid_code(code):
+    result = apply_discount(100, code)
     assert result == 100, "Invalid discount code should not change total"
 
 
