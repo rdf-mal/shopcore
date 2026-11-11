@@ -1,0 +1,18 @@
+name: Python-Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Python einrichten
+        run: uv python install 3.13
+      - name: Projekt installieren
+        run: uv sync --dev
+      - name: Tests ausführen
+        run: uv run pytest
